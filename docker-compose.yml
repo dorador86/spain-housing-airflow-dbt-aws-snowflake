@@ -1,0 +1,52 @@
+version: '3'
+
+x-airflow-env: &airflow-common
+  AIRFLOW__CORE__EXECUTOR: LocalExecutor
+  AIRFLOW__CORE__FERNET_KEY: ''
+  AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+  AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+  AIRFLOW__LOGGING__REMOTE_LOGGING: 'true'
+  AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: 'aws_default'
+  AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: 's3://spain-housing-datalake/airflow-logs'
+  AIRFLOW__SECRETS__BACKEND: 'airflow.providers.amazon.aws.secrets.secrets_manager.SecretsManagerBackend'
+  AIRFLOW__SECRETS__BACKEND_KWARGS: '{"connections_prefix": "airflow/connections", "variables_prefix": "airflow/variables"}'
+
+services:
+
+  airflow:
+    image: apache/airflow:2.9.2-python3.10
+    restart: always
+    environment:
+      <<: *airflow-common
+      AWS_REGION: eu-west-1
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    ports:
+      - "8080:8080"
+    command: webserver
+    depends_on:
+      - postgres
+
+  scheduler:
+    image: apache/airflow:2.9.2-python3.10
+    depends_on:
+      - postgres
+    restart: always
+    environment:
+      <<: *airflow-common
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    command: scheduler
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
