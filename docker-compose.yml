@@ -8,6 +8,7 @@ x-airflow-env: &airflow-common
   AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: 's3://spain-housing-datalake/airflow-logs'
   AIRFLOW__SECRETS__BACKEND: 'airflow.providers.amazon.aws.secrets.secrets_manager.SecretsManagerBackend'
   AIRFLOW__SECRETS__BACKEND_KWARGS: '{"connections_prefix": "airflow/connections", "variables_prefix": "airflow/variables"}'
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
 
 services:
 
@@ -29,8 +30,6 @@ services:
 
   scheduler:
     image: apache/airflow:2.9.2-python3.10
-    depends_on:
-      - postgres
     restart: always
     environment:
       <<: *airflow-common
@@ -39,6 +38,8 @@ services:
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
     command: scheduler
+    depends_on:
+      - postgres
 
   postgres:
     image: postgres:14
