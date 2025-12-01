@@ -2,6 +2,7 @@ x-airflow-env: &airflow-common
   AIRFLOW__CORE__EXECUTOR: LocalExecutor
   AIRFLOW__CORE__FERNET_KEY: ''
   AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+  _PIP_ADDITIONAL_REQUIREMENTS: "pandas polars apache-airflow-providers-amazon"
   AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
   AIRFLOW__LOGGING__REMOTE_LOGGING: 'true'
   AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: 'aws_default'
