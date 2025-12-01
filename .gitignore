@@ -51,6 +51,13 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# --- Data Engineering Project Structure (Exclude Local Artifacts) ---
+# Ignore the entire local test directory structure
+tests/ 
+
+# Ignore the local data output folders (where raw, processed files are saved during local testing)
+data/
+
 # Translations
 *.mo
 *.pot
