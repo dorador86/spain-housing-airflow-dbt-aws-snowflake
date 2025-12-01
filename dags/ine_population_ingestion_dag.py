@@ -13,7 +13,7 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 # --- Configuration ---
-S3_BUCKET = "my-datalake-bucket"    # ¡REEMPLAZA CON TU NOMBRE DE BUCKET REAL!
+S3_BUCKET = "spain-housing-datalake"
 S3_CONN_ID = "aws_s3_conn"          # ID de la Conexión AWS S3 configurada en Airflow
 S3_KEY = "raw/population/population_INE_raw.parquet"
 INE_POBLACION_URL = "https://www.ine.es/jaxi/files/tpx/csv_bdsc/55200.csv"
