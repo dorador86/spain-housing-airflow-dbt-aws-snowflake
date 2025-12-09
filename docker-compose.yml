@@ -50,3 +50,13 @@ services:
       POSTGRES_DB: airflow
     volumes:
       - ./pgdata:/var/lib/postgresql/data
+
+  remote-chromedriver:
+    image: selenium/standalone-chrome:latest
+    container_name: remote-chromedriver
+    networks:
+      - default
+    ports:
+      - "4444:4444"
+    shm_size: "2g"
+    restart: always
