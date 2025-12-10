@@ -1,4 +1,10 @@
 -- ===============================================================================
+-- 0. CLEANUP (OPTIONAL - USE WITH CAUTION)
+-- ===============================================================================
+-- Uncomment this line if you want to perform a full reset of the environment.
+-- DROP DATABASE IF EXISTS SPAIN_HOUSING_DB;
+
+-- ===============================================================================
 -- 1. INITIAL CONFIGURATION (DATABASE, WAREHOUSE, SCHEMA)
 -- ===============================================================================
 USE ROLE ACCOUNTADMIN; -- Or the role with sufficient privileges
@@ -21,62 +27,58 @@ CREATE SCHEMA IF NOT EXISTS ANALYTICS;
 CREATE OR REPLACE FILE FORMAT RAW.PARQUET_FORMAT
     TYPE = 'PARQUET'
     COMPRESSION = 'SNAPPY'
-    BINARY_AS_TEXT = FALSE; -- Important for complex data types
+    BINARY_AS_TEXT = FALSE; 
 
 -- ===============================================================================
 -- 3. S3 INTEGRATION (EXTERNAL STAGE)
 -- ===============================================================================
--- IMPORTANT: For this PoC, we use direct credentials.
--- In production environments, using a STORAGE INTEGRATION (IAM Role) is recommended.
--- Replace 'YOUR_ACCESS_KEY' and 'YOUR_SECRET_KEY' with your actual AWS credentials.
+-- IMPORTANT: Replace 'YOUR_ACCESS_KEY' and 'YOUR_SECRET_KEY' with your actual AWS credentials.
 
 CREATE OR REPLACE STAGE RAW.S3_LAKE_STAGE
     URL = 's3://spain-housing-datalake/raw/'
     CREDENTIALS = (AWS_KEY_ID='YOUR_ACCESS_KEY' AWS_SECRET_KEY='YOUR_SECRET_KEY')
     FILE_FORMAT = RAW.PARQUET_FORMAT;
 
--- Verify if files are visible (DAGs must have run beforehand)
--- LIST @RAW.S3_LAKE_STAGE;
-
 -- ===============================================================================
--- 4. RAW TABLES (DDL)
+-- 4. RAW TABLES (DDL) - ENGLISH NAMING CONVENTION
 -- ===============================================================================
--- We take advantage of Snowflake's ability to query Parquet directly,
--- but for robustness, we define explicit schemas.
 
 -- 4.1. POPULATION (INE)
-CREATE OR REPLACE TABLE RAW.RAW_POBLACION (
-    municipio_residencia VARCHAR,
-    sexo VARCHAR,
-    periodo INT,
-    total INT,
+-- S3 Prefix: raw/population/
+CREATE OR REPLACE TABLE RAW.RAW_POPULATION (
+    municipality_residence VARCHAR,  -- Was: municipio_residencia
+    sex VARCHAR,                     -- Was: sexo
+    period INT,                      -- Was: periodo
+    total INT,                       -- Was: total
     __LOADED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );
 
 -- 4.2. REAL ESTATE VALUATIONS (FOMENTO)
-CREATE OR REPLACE TABLE RAW.RAW_TASACION (
-    provincia VARCHAR,
-    municipio VARCHAR,
-    valor_medio_m2 FLOAT,  -- Was float32 in Parquet
-    numero_tasaciones INT,
+-- S3 Prefix: raw/valuations/
+CREATE OR REPLACE TABLE RAW.RAW_VALUATIONS (
+    province VARCHAR,                -- Was: provincia
+    municipality VARCHAR,            -- Was: municipio
+    avg_value_m2 FLOAT,              -- Was: valor_medio_m2
+    total_appraisals INT,            -- Was: numero_tasaciones
     __LOADED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );
 
 -- 4.3. INCOME (AEAT)
-CREATE OR REPLACE TABLE RAW.RAW_INGRESOS (
-    cod_municipio_ine VARCHAR,
-    municipio VARCHAR,
-    renta_bruta_media INT,
-    renta_disponible_media INT,
-    numero_declaraciones INT,
+-- S3 Prefix: raw/income/
+CREATE OR REPLACE TABLE RAW.RAW_INCOME (
+    municipality_code_ine VARCHAR,   -- Was: cod_municipio_ine
+    municipality VARCHAR,            -- Was: municipio
+    avg_gross_income INT,            -- Was: renta_bruta_media
+    avg_disposable_income INT,       -- Was: renta_disponible_media
+    total_declarations INT,          -- Was: numero_declaraciones
     __LOADED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );
 
 -- ===============================================================================
--- 5. LOAD EXAMPLES (COPY INTO) - To be orchestrated by Airflow/dbt
+-- 5. LOAD EXAMPLES (COPY INTO)
 -- ===============================================================================
 /*
-COPY INTO RAW.RAW_POBLACION(municipio_residencia, sexo, periodo, total)
+COPY INTO RAW.RAW_POPULATION(municipality_residence, sex, period, total)
 FROM (
     SELECT 
         $1:Municipio_de_residencia::VARCHAR, 
@@ -87,7 +89,7 @@ FROM (
 )
 PATTERN='.*population_INE_raw.parquet';
 
-COPY INTO RAW.RAW_TASACION(provincia, municipio, valor_medio_m2, numero_tasaciones)
+COPY INTO RAW.RAW_VALUATIONS(province, municipality, avg_value_m2, total_appraisals)
 FROM (
     SELECT 
         $1:Provincia::VARCHAR,
@@ -98,7 +100,7 @@ FROM (
 )
 PATTERN='.*valuations_Fomento_raw.parquet';
 
-COPY INTO RAW.RAW_INGRESOS(cod_municipio_ine, municipio, renta_bruta_media, renta_disponible_media, numero_declaraciones)
+COPY INTO RAW.RAW_INCOME(municipality_code_ine, municipality, avg_gross_income, avg_disposable_income, total_declarations)
 FROM (
     SELECT 
         $1:COD_MUNICIPIO_INE::VARCHAR,
