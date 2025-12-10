@@ -13,12 +13,6 @@ with DAG(
     tags=["dbt", "transformation", "snowflake"],
 ) as dag:
 
-    # 1. Install dependencies (if not present in image) & Debug
-    dbt_debug = BashOperator(
-        task_id="dbt_debug",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt debug --profiles-dir .",
-    )
-
     # 2. Run dbt models
     dbt_run = BashOperator(
         task_id="dbt_run",
@@ -31,4 +25,4 @@ with DAG(
         bash_command=f"cd {DBT_PROJECT_DIR} && dbt test --profiles-dir .",
     )
 
-    dbt_debug >> dbt_run >> dbt_test
+    dbt_run >> dbt_test

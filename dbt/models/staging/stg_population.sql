@@ -4,11 +4,11 @@ with source as (
 
 renamed as (
     select
-        municipality_residencia as municipality_raw,
+        municipality_residence as municipality_raw,
         -- Extract INE code if present (e.g. "04001 - Abla" -> "04001")
-        split_part(municipality_residencia, ' ', 1) as municipality_code,
+        split_part(municipality_residence, ' ', 1) as municipality_code,
         -- Extract Name
-        trim(substr(municipality_residencia, position(' ' in municipality_residencia))) as municipality_name,
+        trim(substr(municipality_residence, position(' ' in municipality_residence))) as municipality_name,
         sex,
         period as year,
         total as population_count
