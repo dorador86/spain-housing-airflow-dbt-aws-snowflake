@@ -2,7 +2,7 @@ x-airflow-env: &airflow-common
   AIRFLOW__CORE__EXECUTOR: LocalExecutor
   AIRFLOW__CORE__FERNET_KEY: ''
   AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
-  _PIP_ADDITIONAL_REQUIREMENTS: "pandas polars apache-airflow-providers-amazon xlrd selenium"
+  _PIP_ADDITIONAL_REQUIREMENTS: "pandas polars apache-airflow-providers-amazon xlrd selenium dbt-snowflake"
   AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
   AIRFLOW__LOGGING__REMOTE_LOGGING: 'true'
   AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: 'aws_default'
@@ -19,6 +19,14 @@ services:
     environment:
       <<: *airflow-common
       AWS_REGION: eu-west-1
+      # Snowflake Credentials (Loaded from .env file)
+      SNOWFLAKE_ACCOUNT: ${SNOWFLAKE_ACCOUNT}
+      SNOWFLAKE_USER: ${SNOWFLAKE_USER}
+      SNOWFLAKE_PASSWORD: ${SNOWFLAKE_PASSWORD}
+      SNOWFLAKE_ROLE: ${SNOWFLAKE_ROLE}
+      SNOWFLAKE_WAREHOUSE: ${SNOWFLAKE_WAREHOUSE}
+      SNOWFLAKE_DATABASE: ${SNOWFLAKE_DATABASE}
+      SNOWFLAKE_SCHEMA: ${SNOWFLAKE_SCHEMA}
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
@@ -34,6 +42,14 @@ services:
     restart: always
     environment:
       <<: *airflow-common
+      # Snowflake Credentials (Loaded from .env file)
+      SNOWFLAKE_ACCOUNT: ${SNOWFLAKE_ACCOUNT}
+      SNOWFLAKE_USER: ${SNOWFLAKE_USER}
+      SNOWFLAKE_PASSWORD: ${SNOWFLAKE_PASSWORD}
+      SNOWFLAKE_ROLE: ${SNOWFLAKE_ROLE}
+      SNOWFLAKE_WAREHOUSE: ${SNOWFLAKE_WAREHOUSE}
+      SNOWFLAKE_DATABASE: ${SNOWFLAKE_DATABASE}
+      SNOWFLAKE_SCHEMA: ${SNOWFLAKE_SCHEMA}
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
