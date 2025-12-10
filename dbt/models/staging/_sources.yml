@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: raw_data
+    database: SPAIN_HOUSING_DB
+    schema: RAW
+    tables:
+      - name: RAW_POPULATION
+      - name: RAW_VALUATIONS
+      - name: RAW_INCOME
