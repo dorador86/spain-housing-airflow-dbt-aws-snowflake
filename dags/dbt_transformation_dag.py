@@ -16,19 +16,19 @@ with DAG(
     # 1. Install dependencies (if not present in image) & Debug
     dbt_debug = BashOperator(
         task_id="dbt_debug",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt debug",
+        bash_command=f"cd {DBT_PROJECT_DIR} && dbt debug --profiles-dir .",
     )
 
     # 2. Run dbt models
     dbt_run = BashOperator(
         task_id="dbt_run",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run",
+        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --profiles-dir .",
     )
 
     # 3. Test data quality
     dbt_test = BashOperator(
         task_id="dbt_test",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt test",
+        bash_command=f"cd {DBT_PROJECT_DIR} && dbt test --profiles-dir .",
     )
 
     dbt_debug >> dbt_run >> dbt_test
