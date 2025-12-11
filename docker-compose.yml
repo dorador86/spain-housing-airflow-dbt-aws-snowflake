@@ -12,6 +12,8 @@ x-airflow-env: &airflow-common
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
   AWS_REGION: eu-west-1
   AWS_DEFAULT_REGION: eu-west-1
+  # Automatically create the 'snowflake_conn' connection from .env variables
+  AIRFLOW_CONN_SNOWFLAKE_CONN: 'snowflake://${SNOWFLAKE_USER}:${SNOWFLAKE_PASSWORD}@${SNOWFLAKE_ACCOUNT}/${SNOWFLAKE_DATABASE}/${SNOWFLAKE_SCHEMA}?warehouse=${SNOWFLAKE_WAREHOUSE}&role=${SNOWFLAKE_ROLE}'
 
 services:
 
