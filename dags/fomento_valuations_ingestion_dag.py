@@ -9,6 +9,7 @@ import io
 from airflow.models.dag import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
 # --- Configuration ---
 S3_BUCKET = "spain-housing-datalake"
@@ -120,3 +121,19 @@ with DAG(
             "url": VALUATIONS_URL,
         },
     )
+
+    # Task: Load data from S3 to Snowflake
+    copy_into_snowflake = SQLExecuteQueryOperator(
+        task_id="copy_into_snowflake",
+        conn_id="snowflake_conn",
+        sql=f"""
+            COPY INTO RAW.RAW_VALUATIONS
+            FROM @RAW.S3_LAKE_STAGE/valuations/
+            PATTERN='.*valuations_Fomento_raw.parquet'
+            FILE_FORMAT = (TYPE = 'PARQUET')
+            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+            ON_ERROR = 'CONTINUE';
+        """,
+    )
+
+    ingest_and_upload_task >> copy_into_snowflake

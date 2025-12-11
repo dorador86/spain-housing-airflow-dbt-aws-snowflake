@@ -8,6 +8,7 @@ import polars as pl
 from airflow.models.dag import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -164,3 +165,19 @@ with DAG(
             "url": AEAT_PAGE_URL,
         },
     )
+
+    # Task: Load data from S3 to Snowflake
+    copy_into_snowflake = SQLExecuteQueryOperator(
+        task_id="copy_into_snowflake",
+        conn_id="snowflake_conn",
+        sql=f"""
+            COPY INTO RAW.RAW_INCOME
+            FROM @RAW.S3_LAKE_STAGE/income/
+            PATTERN='.*aeat_2023_raw.parquet'
+            FILE_FORMAT = (TYPE = 'PARQUET')
+            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+            ON_ERROR = 'CONTINUE';
+        """,
+    )
+
+    ingest_task >> copy_into_snowflake
