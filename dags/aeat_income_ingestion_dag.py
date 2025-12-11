@@ -111,13 +111,27 @@ def ingest_and_upload_aeat_income(s3_bucket: str, s3_key: str, aws_conn_id: str,
         for col in ['RENTA_BRUTA_MEDIA_EUROS', 'RENTA_DISPONIBLE_MEDIA_EUROS', 'NUMERO_DECLARACIONES']:
             df_pd[col] = df_pd[col].astype(str).str.replace('.', '', regex=False).str.replace(',', '', regex=False)
 
-        # 5. Convert to Polars
-        df_pl = pl.DataFrame(df_pd[['COD_MUNICIPIO_INE', 'MUNICIPIO', 'RENTA_BRUTA_MEDIA_EUROS', 'RENTA_DISPONIBLE_MEDIA_EUROS', 'NUMERO_DECLARACIONES']])
+        # 5. Convert to Polars and Rename to English (Match Snowflake Schema)
+        df_pl = pl.DataFrame(df_pd[[
+            'COD_MUNICIPIO_INE', 
+            'MUNICIPIO', 
+            'RENTA_BRUTA_MEDIA_EUROS', 
+            'RENTA_DISPONIBLE_MEDIA_EUROS', 
+            'NUMERO_DECLARACIONES'
+        ]])
+        
+        df_pl = df_pl.rename({
+            'COD_MUNICIPIO_INE': 'municipality_code_ine',
+            'MUNICIPIO': 'municipality',
+            'RENTA_BRUTA_MEDIA_EUROS': 'avg_gross_income',
+            'RENTA_DISPONIBLE_MEDIA_EUROS': 'avg_disposable_income',
+            'NUMERO_DECLARACIONES': 'total_declarations'
+        })
         
         df_pl = df_pl.with_columns([
-            pl.col('RENTA_BRUTA_MEDIA_EUROS').cast(pl.Int32, strict=False),
-            pl.col('RENTA_DISPONIBLE_MEDIA_EUROS').cast(pl.Int32, strict=False),
-            pl.col('NUMERO_DECLARACIONES').cast(pl.Int32, strict=False),
+            pl.col('avg_gross_income').cast(pl.Int32, strict=False),
+            pl.col('avg_disposable_income').cast(pl.Int32, strict=False),
+            pl.col('total_declarations').cast(pl.Int32, strict=False),
         ])
         
         print(f"✅ Data cleaning complete. Total records: {len(df_pl)}")

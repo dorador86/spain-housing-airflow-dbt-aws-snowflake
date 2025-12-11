@@ -66,15 +66,23 @@ def ingest_and_upload_fomento_valuations(s3_bucket: str, s3_key: str, aws_conn_i
             pl.col("Provincia").fill_null(strategy="forward")
         )
 
+        # Rename to English to Match Snowflake Schema
+        df_pl = df_pl.rename({
+            'Provincia': 'province',
+            'Municipio': 'municipality',
+            'VALOR_MEDIO_M2_EUROS': 'avg_value_m2',
+            'NUMERO_TASACIONES_TOTAL': 'total_appraisals'
+        })
+
         # Cast types and filter null counts
         # strict=False allows "empty" strings (from n.r. removal) to become Nulls
         df_pl = (
             df_pl
             .with_columns([
-                pl.col("VALOR_MEDIO_M2_EUROS").cast(pl.Float32, strict=False), 
-                pl.col("NUMERO_TASACIONES_TOTAL").cast(pl.Int32, strict=False), 
+                pl.col("avg_value_m2").cast(pl.Float32, strict=False), 
+                pl.col("total_appraisals").cast(pl.Int32, strict=False), 
             ])
-            .filter(pl.col('NUMERO_TASACIONES_TOTAL').is_not_null())
+            .filter(pl.col('total_appraisals').is_not_null())
         )
 
         print(f"✅ Data cleaning complete. Total records: {len(df_pl)}")

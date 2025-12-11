@@ -40,16 +40,25 @@ def ingest_and_upload_ine_population(s3_bucket: str, s3_key: str, aws_conn_id: s
         df_pd = pd.read_csv(csv_content, sep=';')
         
         # 3. Minimal Cleaning and Pre-processing
+        # 3. Minimal Cleaning and Pre-processing
+        # Rename columns to match Snowflake Table Schema (English)
         df_pd = df_pd.rename(columns={
-            'ï»¿Municipio de residencia': 'Municipio de residencia'
+            'ï»¿Municipio de residencia': 'municipality_residence',
+            'Municipio de residencia': 'municipality_residence',
+            'Sexo': 'sex',
+            'Periodo': 'period',
+            'Total': 'total'
         }, errors='ignore')
+
         df_pd = df_pd.drop(columns=['Unnamed: 4'], errors='ignore')
-        df_pd['Total'] = df_pd['Total'].astype(str).str.replace('.', '', regex=False)
+        
+        # Clean numeric column (using new name)
+        df_pd['total'] = df_pd['total'].astype(str).str.replace('.', '', regex=False)
         
         # 4. Convert to Polars and Type Casting
         df_pl = pl.DataFrame(df_pd)
         df_pl = df_pl.with_columns(
-            pl.col("Total").cast(pl.Int32, strict=False)
+            pl.col("total").cast(pl.Int32, strict=False)
         )
         
         print(f"✅ Data cleaning complete. Total records: {len(df_pl)}")
