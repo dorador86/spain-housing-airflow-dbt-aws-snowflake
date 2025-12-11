@@ -10,6 +10,8 @@ x-airflow-env: &airflow-common
   AIRFLOW__SECRETS__BACKEND: 'airflow.providers.amazon.aws.secrets.secrets_manager.SecretsManagerBackend'
   AIRFLOW__SECRETS__BACKEND_KWARGS: '{"connections_prefix": "airflow/connections", "variables_prefix": "airflow/variables"}'
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+  AWS_REGION: eu-west-1
+  AWS_DEFAULT_REGION: eu-west-1
 
 services:
 
