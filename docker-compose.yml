@@ -13,7 +13,8 @@ x-airflow-env: &airflow-common
   AWS_REGION: eu-west-1
   AWS_DEFAULT_REGION: eu-west-1
   # Automatically create the 'snowflake_conn' connection from .env variables
-  AIRFLOW_CONN_SNOWFLAKE_CONN: 'snowflake://${SNOWFLAKE_USER}:${SNOWFLAKE_PASSWORD}@${SNOWFLAKE_ACCOUNT}/${SNOWFLAKE_DATABASE}/${SNOWFLAKE_SCHEMA}?warehouse=${SNOWFLAKE_WAREHOUSE}&role=${SNOWFLAKE_ROLE}'
+  # Important: account is passed as query param, host is left empty in the URI structure for snowflake-connector-python
+  AIRFLOW_CONN_SNOWFLAKE_CONN: 'snowflake://${SNOWFLAKE_USER}:${SNOWFLAKE_PASSWORD}@/?account=${SNOWFLAKE_ACCOUNT}&database=${SNOWFLAKE_DATABASE}&schema=${SNOWFLAKE_SCHEMA}&warehouse=${SNOWFLAKE_WAREHOUSE}&role=${SNOWFLAKE_ROLE}'
 
 services:
 
