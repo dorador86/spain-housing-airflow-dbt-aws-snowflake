@@ -185,6 +185,7 @@ with DAG(
         task_id="copy_into_snowflake",
         conn_id="snowflake_conn",
         sql=f"""
+            TRUNCATE TABLE RAW.RAW_INCOME;
             COPY INTO RAW.RAW_INCOME
             FROM @RAW.S3_LAKE_STAGE/income/
             PATTERN='.*aeat_2023_raw.parquet'

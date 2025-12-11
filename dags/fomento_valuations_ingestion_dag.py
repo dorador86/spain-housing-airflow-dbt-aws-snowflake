@@ -135,6 +135,7 @@ with DAG(
         task_id="copy_into_snowflake",
         conn_id="snowflake_conn",
         sql=f"""
+            TRUNCATE TABLE RAW.RAW_VALUATIONS;
             COPY INTO RAW.RAW_VALUATIONS
             FROM @RAW.S3_LAKE_STAGE/valuations/
             PATTERN='.*valuations_Fomento_raw.parquet'

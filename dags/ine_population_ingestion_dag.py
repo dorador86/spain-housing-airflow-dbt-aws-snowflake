@@ -116,6 +116,7 @@ with DAG(
         task_id="copy_into_snowflake",
         conn_id="snowflake_conn",
         sql=f"""
+            TRUNCATE TABLE RAW.RAW_POPULATION;
             COPY INTO RAW.RAW_POPULATION
             FROM @RAW.S3_LAKE_STAGE/population/
             PATTERN='.*population_INE_raw.parquet'
