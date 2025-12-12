@@ -48,7 +48,6 @@ CREATE OR REPLACE STAGE RAW.S3_LAKE_STAGE
 CREATE OR REPLACE TABLE RAW.RAW_POPULATION (
     municipality_residence VARCHAR,  -- Was: municipio_residencia
     sex VARCHAR,                     -- Was: sexo
-    period INT,                      -- Was: periodo
     total INT,                       -- Was: total
     __LOADED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );

@@ -47,20 +47,21 @@ def ingest_and_upload_ine_population(s3_bucket: str, s3_key: str, aws_conn_id: s
             'ï»¿Municipio de residencia': 'municipality_residence',
             'Municipio de residencia': 'municipality_residence',
             'Sexo': 'sex',
-            'Periodo': 'period',
             'Total': 'total'
         }, errors='ignore')
 
-        df_pd = df_pd.drop(columns=['Unnamed: 4'], errors='ignore')
+        # Drop unneeded columns: 'period' (if exists) and 'Unnamed: 4'
+        df_pd = df_pd.drop(columns=['Unnamed: 4', 'Periodo'], errors='ignore')
         
         # Clean numeric column (using new name)
         df_pd['total'] = df_pd['total'].astype(str).str.replace('.', '', regex=False)
         
         # 4. Convert to Polars and Type Casting
         df_pl = pl.DataFrame(df_pd)
-        df_pl = df_pl.with_columns(
-            pl.col("total").cast(pl.Int32, strict=False)
-        )
+        df_pl = df_pl.with_columns([
+            pl.col("total").cast(pl.Int32, strict=False),
+            pl.lit(datetime.datetime.now()).alias("__LOADED_AT")
+        ])
         
         print(f"✅ Data cleaning complete. Total records: {len(df_pl)}")
 
