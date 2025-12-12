@@ -140,7 +140,7 @@ def ingest_and_upload_aeat_income(s3_bucket: str, s3_key: str, aws_conn_id: str,
             pl.col('avg_gross_income').cast(pl.Int32, strict=False),
             pl.col('avg_disposable_income').cast(pl.Int32, strict=False),
             pl.col('total_declarations').cast(pl.Int32, strict=False),
-            pl.lit(datetime.datetime.now()).alias("__LOADED_AT")
+            pl.lit(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")).alias("__LOADED_AT")
         ])
         
         print(f"✅ Data cleaning complete. Total records: {len(df_pl)}")

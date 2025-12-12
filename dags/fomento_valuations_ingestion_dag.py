@@ -81,7 +81,7 @@ def ingest_and_upload_fomento_valuations(s3_bucket: str, s3_key: str, aws_conn_i
             .with_columns([
                 pl.col("avg_value_m2").cast(pl.Float32, strict=False), 
                 pl.col("total_appraisals").cast(pl.Int32, strict=False), 
-                pl.lit(datetime.datetime.now()).alias("__LOADED_AT")
+                pl.lit(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")).alias("__LOADED_AT")
             ])
             .filter(pl.col('total_appraisals').is_not_null())
         )

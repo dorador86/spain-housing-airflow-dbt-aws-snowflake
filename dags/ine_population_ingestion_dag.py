@@ -60,7 +60,8 @@ def ingest_and_upload_ine_population(s3_bucket: str, s3_key: str, aws_conn_id: s
         df_pl = pl.DataFrame(df_pd)
         df_pl = df_pl.with_columns([
             pl.col("total").cast(pl.Int32, strict=False),
-            pl.lit(datetime.datetime.now()).alias("__LOADED_AT")
+            # Save as String to ensure Snowflake parses it correctly regardless of Parquet version
+            pl.lit(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")).alias("__LOADED_AT")
         ])
         
         print(f"✅ Data cleaning complete. Total records: {len(df_pl)}")
