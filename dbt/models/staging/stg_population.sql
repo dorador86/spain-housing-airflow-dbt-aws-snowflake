@@ -10,7 +10,6 @@ renamed as (
         -- Extract Name
         trim(substr(municipality_residence, position(' ' in municipality_residence))) as municipality_name,
         sex,
-        period as year,
         total as population_count
     from source
 )
