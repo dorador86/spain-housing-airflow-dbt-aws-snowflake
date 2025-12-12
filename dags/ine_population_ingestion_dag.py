@@ -33,8 +33,9 @@ def ingest_and_upload_ine_population(s3_bucket: str, s3_key: str, aws_conn_id: s
         response = requests.get(url)
         response.raise_for_status() 
 
-        # Use BytesIO and the typical Latin-1 encoding for INE CSVs
-        csv_content = io.StringIO(response.content.decode('latin-1'))
+        # Try decoding as UTF-8 first (standard), fallback to latin-1 if needed is not implemented but usually utf-8 works for modern INE files
+        # The artifact 'Ã­' suggests the source IS utf-8.
+        csv_content = io.StringIO(response.content.decode('utf-8'))
         
         # 2. Read RAW data using Pandas
         df_pd = pd.read_csv(csv_content, sep=';')
