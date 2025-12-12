@@ -82,8 +82,15 @@ def ingest_and_upload_aeat_income(s3_bucket: str, s3_key: str, aws_conn_id: str,
         print("Data extraction after expansion...")
         
         # 3. Get HTML and Parse with Pandas
+        # Configure thousands and decimal separators to correctly parse Spanish numbers correctly
         html_content = driver.page_source
-        tables = pd.read_html(io.StringIO(html_content), attrs={'id': 'table01'}, header=None)
+        tables = pd.read_html(
+            io.StringIO(html_content), 
+            attrs={'id': 'table01'}, 
+            header=None,
+            thousands='.',
+            decimal=','
+        )
         
         if not tables:
              raise ValueError("Pandas could not find the table 'table01' in the scraped HTML.")
@@ -107,9 +114,10 @@ def ingest_and_upload_aeat_income(s3_bucket: str, s3_key: str, aws_conn_id: str,
         df_pd['COD_MUNICIPIO_INE'] = df_pd['MUNICIPIO_O_COMUNIDAD'].astype(str).str.extract(r'-(\d{5})')
         df_pd['MUNICIPIO'] = df_pd['MUNICIPIO_O_COMUNIDAD'].astype(str).str.split('-').str[0].str.strip()
 
-        # Clean numeric strings
+        # Clean numeric strings (Removed manual cleaning as pd.read_html now handles it)
+        # However, we ensure they are numeric just in case there are dirty values
         for col in ['RENTA_BRUTA_MEDIA_EUROS', 'RENTA_DISPONIBLE_MEDIA_EUROS', 'NUMERO_DECLARACIONES']:
-            df_pd[col] = df_pd[col].astype(str).str.replace('.', '', regex=False).str.replace(',', '', regex=False)
+             df_pd[col] = pd.to_numeric(df_pd[col], errors='coerce').fillna(0)
 
         # 5. Convert to Polars and Rename to English (Match Snowflake Schema)
         df_pl = pl.DataFrame(df_pd[[
