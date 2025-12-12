@@ -1,11 +1,25 @@
 {{ config(materialized='table') }}
 
 with income as (
-    select * from {{ ref('stg_income') }}
+    select 
+        *,
+        -- Normalize municipality name: remove text after comma
+        lower(trim(split_part(municipality_name, ',', 1))) as normalized_name
+    from {{ ref('stg_income') }}
 ),
 
 valuations as (
-    select * from {{ ref('stg_valuations') }}
+    select 
+        *,
+        -- Normalize municipality name: remove text in parentheses at end AND after comma
+        lower(trim(
+            split_part(
+                regexp_replace(municipality_name, '\\s*\\([^)]*\\)\\s*$', ''),
+                ',', 
+                1
+            )
+        )) as normalized_name
+    from {{ ref('stg_valuations') }}
 ),
 
 population as (
@@ -26,13 +40,14 @@ joined as (
         p.population_count
         
     from income i
-    -- Join Valuations by Name (LOWER to minimalize mismatch)
-    left join valuations v 
-        on lower(trim(i.municipality_name)) = lower(trim(v.municipality_name))
-    
-    -- Join Population by Code (Robust)
-    left join population p
+    -- Join Population by Code (Robust) - INNER JOIN to keep only full matches
+    inner join population p
         on i.municipality_code = p.municipality_code
+    
+    -- Join Valuations by normalized name - INNER JOIN
+    -- Both sides normalized to handle: "Municipio, El", "Municipio (Los)", etc.
+    inner join valuations v 
+        on i.normalized_name = v.normalized_name
 )
 
 select
