@@ -1,0 +1,79 @@
+version: 2
+
+models:
+  - name: fct_housing_market
+    description: |
+      Fact table combining income, population, and property valuation data
+      to calculate housing market tension across Spanish municipalities.
+      
+      The tension_index measures housing affordability: higher values indicate
+      that housing is more expensive relative to disposable income.
+    columns:
+      - name: municipality_code
+        description: "INE municipality code (5 digits)"
+        tests:
+          - not_null
+          - unique
+      - name: municipality_name
+        description: "Municipality name from income data"
+        tests:
+          - not_null
+      - name: avg_gross_income
+        description: "Average gross income in euros"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 200000
+              severity: warn
+      - name: avg_disposable_income
+        description: "Average disposable income in euros"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 150000
+              severity: warn
+      - name: housing_price_m2
+        description: "Average housing price per square meter in euros"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 50000
+              severity: warn
+      - name: total_appraisals
+        description: "Total number of property appraisals"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              severity: error
+      - name: population_count
+        description: "Total population (both sexes)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              severity: error
+      - name: tension_index
+        description: |
+          Housing market tension index calculated as:
+          (housing_price_m2 / avg_disposable_income) * 100
+          
+          Higher values indicate greater housing affordability stress.
+          Values typically range from 5 to 100.
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1000
+              severity: warn
+              where: "tension_index is not null"
+    
+    # Model-level tests
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "avg_disposable_income <= avg_gross_income"
+          config:
+            severity: warn

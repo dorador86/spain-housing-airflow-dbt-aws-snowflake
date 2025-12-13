@@ -1,0 +1,91 @@
+version: 2
+
+models:
+  - name: stg_income
+    description: "Staging table for income data from AEAT (Spanish Tax Agency)"
+    columns:
+      - name: municipality_code
+        description: "INE municipality code (5 digits)"
+        tests:
+          - not_null
+          - unique
+      - name: municipality_name
+        description: "Municipality name"
+        tests:
+          - not_null
+      - name: avg_gross_income
+        description: "Average gross income in euros"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 200000
+              severity: warn
+      - name: avg_disposable_income
+        description: "Average disposable income in euros"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 150000
+              severity: warn
+      - name: total_declarations
+        description: "Total number of tax declarations"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              severity: error
+
+  - name: stg_population
+    description: "Staging table for population data from INE (National Statistics Institute)"
+    columns:
+      - name: municipality_code
+        description: "INE municipality code extracted from municipality_residence"
+        tests:
+          - not_null
+      - name: municipality_name
+        description: "Municipality name"
+        tests:
+          - not_null
+      - name: population_count
+        description: "Total population count (both sexes)"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              severity: error
+      - name: sex
+        description: "Sex category (filtered to 'Ambos sexos')"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Ambos sexos']
+
+  - name: stg_valuations
+    description: "Staging table for property valuations from Fomento (Ministry of Development)"
+    columns:
+      - name: province
+        description: "Province name"
+        tests:
+          - not_null
+      - name: municipality_name
+        description: "Municipality name"
+        tests:
+          - not_null
+      - name: avg_value_m2
+        description: "Average property value per square meter in euros"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 50000
+              severity: warn
+              where: "avg_value_m2 is not null"
+      - name: total_appraisals
+        description: "Total number of property appraisals"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              severity: error
