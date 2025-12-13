@@ -54,9 +54,15 @@ def ingest_and_upload_fomento_valuations(s3_bucket: str, s3_key: str, aws_conn_i
         # Cleanup: Remove rows where both Province and Municipio are NaN
         df_pd = df_pd.dropna(subset=['Provincia', 'Municipio'], how='all')
 
-        # Cleanup: Remove thousands separators ('.') and handle 'n.r.'
+        # Cleanup: Convert Spanish number format to standard format
+        # Spanish format: 1.569,8 (thousands separator = '.', decimal separator = ',')
+        # Standard format: 1569.8 (no thousands separator, decimal separator = '.')
         for col in ['VALOR_MEDIO_M2_EUROS', 'NUMERO_TASACIONES_TOTAL']:
-             df_pd[col] = df_pd[col].astype(str).str.replace('.', '', regex=False).replace('n.r.', '', regex=False)
+             df_pd[col] = (df_pd[col]
+                          .astype(str)
+                          .str.replace('.', '', regex=False)      # Remove thousands separator
+                          .str.replace(',', '.', regex=False)     # Convert decimal separator
+                          .replace('n.r.', '', regex=False))      # Handle 'no reportado'
 
         # 4. Convert to Polars and Type Casting
         df_pl = pl.DataFrame(df_pd)
