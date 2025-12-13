@@ -52,12 +52,12 @@ joined as (
 
 select
     *,
-    -- TENSOR INDEX CALCULATION
+    -- TENSION INDEX CALCULATION
     -- Formula: (Housing Price / Disposable Income) * 100
     -- A higher index means housing is more expensive relative to income (High Tension)
     case 
         when avg_disposable_income > 0 then 
-            (housing_price_m2 / avg_disposable_income) * 100
+            round((housing_price_m2 / avg_disposable_income) * 100, 2)
         else null 
     end as tension_index
 from joined
