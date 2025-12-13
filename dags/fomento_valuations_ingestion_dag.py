@@ -36,11 +36,15 @@ def ingest_and_upload_fomento_valuations(s3_bucket: str, s3_key: str, aws_conn_i
         latest_sheet_name = list(all_sheets.keys())[-1]
         print(f"Reading data from the last sheet: {latest_sheet_name}")
 
+        # Read Excel with dtype=str for numeric columns to prevent auto-conversion
+        # This is CRITICAL: Pandas might interpret Spanish format (1.569,8) incorrectly
+        # We need raw string values to process them correctly
         df_pd = pd.read_excel(
             excel_data,
             sheet_name=latest_sheet_name,
             header=14,             # Excel row 15 (index 14)
             usecols="B:C,F:F,J:J", # Select columns: B, C, F, J
+            dtype=str,             # Read ALL columns as strings to preserve original format
             engine='xlrd'
         )
 
