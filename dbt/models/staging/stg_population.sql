@@ -16,4 +16,4 @@ renamed as (
 
 select * 
 from renamed
-where sex = 'Total' -- We only care about the total population for now
+where sex = 'Ambos sexos' -- Filter for total population (both sexes combined)
