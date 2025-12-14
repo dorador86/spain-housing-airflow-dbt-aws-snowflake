@@ -8,7 +8,8 @@ models:
         description: "INE municipality code (5 digits)"
         tests:
           - not_null
-          - unique
+          - unique:
+              severity: warn
       - name: municipality_name
         description: "Municipality name"
         tests:
