@@ -9,7 +9,7 @@ import io
 from airflow.models.dag import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator, SQLCheckOperator
 
 # --- Configuration ---
 S3_BUCKET = "spain-housing-datalake"
@@ -137,6 +137,8 @@ with DAG(
         },
     )
 
+
+
     # Task: Load data from S3 to Snowflake
     copy_into_snowflake = SQLExecuteQueryOperator(
         task_id="copy_into_snowflake",
@@ -152,4 +154,21 @@ with DAG(
         """,
     )
 
-    ingest_and_upload_task >> copy_into_snowflake
+    # Task: Validate data quality in Snowflake
+    # Checks for:
+    # 1. No negative prices
+    # 2. No prices > 50,000 (extreme outlier)
+    # 3. No negative appraisals
+    validate_data_quality = SQLCheckOperator(
+        task_id='validate_valuations_data_quality',
+        conn_id='snowflake_conn',
+        sql="""
+            SELECT COUNT(*) 
+            FROM RAW.RAW_VALUATIONS
+            WHERE avg_value_m2 < 0 
+               OR avg_value_m2 > 50000 
+               OR total_appraisals < 0
+        """
+    )
+
+    ingest_and_upload_task >> copy_into_snowflake >> validate_data_quality

@@ -8,7 +8,7 @@ import polars as pl
 from airflow.models.dag import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator, SQLCheckOperator
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -204,4 +204,18 @@ with DAG(
         """,
     )
 
-    ingest_task >> copy_into_snowflake
+    # Task: Validate data quality
+    # Ensure no negative income or declarations
+    validate_data_quality = SQLCheckOperator(
+        task_id='validate_income_data_quality',
+        conn_id='snowflake_conn',
+        sql="""
+            SELECT COUNT(*) 
+            FROM RAW.RAW_INCOME
+            WHERE avg_gross_income < 0 
+               OR avg_disposable_income < 0
+               OR total_declarations < 0
+        """
+    )
+
+    ingest_task >> copy_into_snowflake >> validate_data_quality
