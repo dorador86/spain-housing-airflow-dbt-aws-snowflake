@@ -59,7 +59,7 @@ This pipeline unifies these sources to calculate the **Tension Index**:
 
 $$ \text{Tension Index} = \frac{\text{Housing Price (€/m²)}}{\text{Avg. Disposable Income (€)}} \times 100 $$
 
-*   **Metric**: Higher values (>20) indicate severe stress on affordability.
+*   **Metric**: Higher values (>10) indicate severe stress on affordability.
 
 ---
 
@@ -91,30 +91,33 @@ A multi-layered approach to ensure data trust:
 
 *Top 5 Municipalities by Housing Market Tension (Sample Output)*
 
-| Rank | Municipality | Province | Housing Price (€/m²) | Avg. Income (€) | **Tension Index** |
-|------|--------------|----------|----------------------|-----------------|-------------------|
-| 1    | Ibiza        | Baleares | 5,850                | 16,300          | **35.89**         |
-| 2    | Santa Eulària| Baleares | 5,200                | 15,900          | **32.70**         |
-| 3    | Marbella     | Málaga   | 4,120                | 14,800          | **27.84**         |
-| 4    | San Sebastián| Guipúzcoa| 5,100                | 22,500          | **22.66**         |
-| 5    | Madrid (City)| Madrid   | 3,900                | 19,800          | **19.69**         |
+| Rank | Municipality          | Province | Housing Price (€/m²) | Avg. Income (€) | **Tension Index** |
+|------|-----------------------|----------|----------------------|-----------------|-------------------|
+| 1    | Santa Eulalia del Río | Baleares | 6,120.8              | 29,782          | **20.55**         |
+| 2    | Eivissa               | Baleares | 5,270.8              | 28,704          | **18.36**         |
+| 3    | Calvià                | Baleares | 5,256.1              | 29,089          | **18.07**         |
+| 4    | Marbella              | Málaga   | 4,301.8              | 25,912          | **16.60**         |
+| 5    | Torremolinos          | Málaga   | 3,675.6              | 23,935          | **15.36**         |
 
-*(Data simulated for demonstration typical values)*
+*(Data from 2025 Real Execution)*
 
 ---
 
 ## 🛠️ Stack & Technologies
 
-*   **Orchestration**: Apache Airflow (Dockerized)
+*   **Cloud Infrastructure**: AWS EC2 (Hosting), AWS S3 (Data Lake)
+*   **Orchestration**: Apache Airflow (Dockerized on EC2)
 *   **Compute/Transformation**: dbt Core + Snowflake (ELT pattern)
-*   **Cloud Storage**: AWS S3
 *   **Containerization**: Docker & Docker Compose
 *   **Languages**: Python (3.10), SQL, Jinja
 *   **Libraries**: Polars, Pandas, Selenium, Airflow-Providers
 
 ---
 
-## � Setup & Usage
+## 💻 Setup & Usage
+
+### 0. ☁️ Cloud Deployment Note
+*This project is designed to be deployed on a Cloud VM (e.g., **AWS EC2 c7i-flex.large**) to handle the memory requirements of Selenium and Airflow containers.*
 
 ### 1. Installation & Infrastructure
 1.  **Clone the Repository**
