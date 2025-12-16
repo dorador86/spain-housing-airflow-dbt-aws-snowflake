@@ -15,68 +15,7 @@ This project demonstrates a production-grade ETL/ELT architecture using modern D
 
 ## 🏗️ Architecture
 
-```mermaid
-graph LR
-    %% Styles Definition
-    classDef docker fill:#2496ED,stroke:#fff,stroke-width:2px,color:white;
-    classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:white;
-    classDef snowflake fill:#29B5E8,stroke:#fff,stroke-width:2px,color:white;
-    classDef airflow fill:#017CEE,stroke:#fff,stroke-width:2px,color:white;
-    classDef dbt fill:#FF694B,stroke:#fff,stroke-width:2px,color:white,stroke-dasharray: 5 5;
-    classDef source fill:#f9f9f9,stroke:#666,stroke-width:1px,stroke-dasharray: 2 2;
-
-    subgraph Orchestration ["🕹️ Orchestration (AWS EC2)"]
-        AF(["Apache Airflow"]):::airflow
-    end
-
-    subgraph Sources ["📡 Data Sources"]
-        WEB["AEAT Web Portal<br/>(JS/Dynamic)"]:::source
-        XLS["Fomento Files<br/>(.xls Legacy)"]:::source
-        CSV["INE Census<br/>(.csv)"]:::source
-    end
-
-    subgraph Ingestion ["🐳 Ingestion Layer (Docker Containers)"]
-        direction TB
-        SEL["Selenium Scraper<br/>(Headless Chrome)"]:::docker
-        PY["Python Workers<br/>(Polars/Pandas)"]:::docker
-    end
-
-    subgraph DataLake ["💾 Data Lake Storage"]
-        S3["AWS S3 Bucket<br/>(Parquet Format)"]:::aws
-    end
-
-    subgraph DWH ["❄️ Modern Data Warehouse"]
-        direction LR
-        
-        subgraph Layers ["Snowflake Layers"]
-            RAW[("RAW_SCHEMA<br/>Variant/Varchar")]:::snowflake
-            STG[("STAGING_SCHEMA<br/>Cleaned Views")]:::snowflake
-            MART[("MARTS_SCHEMA<br/>Business Tables")]:::snowflake
-        end
-
-        DBT(("dbt Core")):::dbt
-    end
-
-    %% Flows
-    WEB -->|HTML Content| SEL
-    SEL -->|Cleaned Data| PY
-    XLS -->|Binary| PY
-    CSV -->|Text| PY
-
-    PY -->|Write Parquet| S3
-    S3 -->|COPY INTO| RAW
-
-    %% Transformation Logic
-    RAW -->|Normalize| STG
-    STG -->|Join & Agg| MART
-    DBT -.->|Compile SQL| Layers
-
-    %% Orchestration Links
-    AF -->|Trigger & Monitor| SEL
-    AF -->|Trigger| PY
-    AF -->|Trigger| DBT
-    AF -.->|SQLCheck Quality| RAW
-```
+![Spain Housing Data Pipeline Architecture](architecture_diagram.png)
 
 ---
 
