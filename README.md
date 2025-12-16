@@ -65,17 +65,21 @@ $$ \text{Tension Index} = \frac{\text{Housing Price (€/m²)}}{\text{Avg. Dispo
 
 ## ⚙️ Key Technical Features
 
-### 1. Advanced Ingestion (Extraction)
-*   **Selenium Web Scraper**: Bypassed simple `requests` limitations to scrape dynamic JS-rendered tables from the Tax Agency (AEAT), handling recursive navigation.
-*   **Polars & Pandas**: Optimized processing of Excel files with Spanish number formats (handling locale-specific decimals `,` vs `.`).
-*   **Raw Data Lake**: Used **AWS S3** as an intermediate Raw storage layer (Parquet format) for auditability.
+### 1. Hybrid Data Ingestion (Extraction Strategy)
+This project handles diverse data formats and sources requiring specific engineering approaches:
+*   **AEAT (Tax Agency)**: **Selenium Web Scraper** to extract data from dynamic JS-rendered tables (bypassing blocking requests).
+*   **Fomento (Housing)**: Automated processing of legacy **Excel (.xls)** files using Polars/Pandas logic.
+*   **INE (Census)**: Integration of large **CSV** exports via direct download.
 
-### 2. Robust Transformation (dbt + Snowflake)
+### 2. Modern Data Lake Architecture (S3 + Parquet)
+*   **Raw Layer**: All ingested data is converted to **Parquet** format and stored in **AWS S3** for efficient, compressed, and schema-preserving storage.
+*   **Staging Layer**: Raw Parquet files are loaded into **Snowflake** using the `COPY INTO` command.
+
+### 3. Robust Transformation (dbt + Snowflake)
 *   **Municipality Normalization**: Implemented complex SQL logic to align mismatched municipality names across sources (e.g., handling *"Coruña, A"* vs *"A Coruña"* vs *"Coruña (A)"*).
 *   **Materialization strategy**: Used `view` for Staging and `table` for Marts for optimal performance/cost.
-*   **Business Logic**: Calculated derived metrics like *Gross vs Disposable Income Gap*.
 
-### 3. Data Quality & Governance (Defense in Depth)
+### 4. Data Quality & Governance (Defense in Depth)
 A multi-layered approach to ensure data trust:
 *   **Ingestion Layer**: `SQLCheckOperator` in Airflow immediately blocks negative prices or unlikely outliers (>50k €/m²).
 *   **Transformation Layer**: **dbt tests** validate referential integrity, uniqueness keys, and acceptable value ranges.
@@ -110,8 +114,9 @@ A multi-layered approach to ensure data trust:
 
 ---
 
-## 🚀 Setup & Usage
+## � Setup & Usage
 
+### 1. Installation & Infrastructure
 1.  **Clone the Repository**
     ```bash
     git clone https://github.com/your-username/spain-housing-data-pipeline.git
@@ -119,7 +124,7 @@ A multi-layered approach to ensure data trust:
     ```
 
 2.  **Environment Setup**
-    Create a `.env` file with your credentials:
+    Create a `.env` file in the root directory with your credentials:
     ```env
     AIRFLOW_UID=50000
     AWS_ACCESS_KEY_ID=your_key
@@ -136,8 +141,18 @@ A multi-layered approach to ensure data trust:
 
 4.  **Access Airflow UI**
     *   Go to `http://localhost:8080`
-    *   Login: `airflow`/`airflow`
-    *   Trigger `dbt_transformation_dag` to run the full pipeline.
+    *   Login: `airflow` / `airflow`
+
+### 2. Pipeline Execution Order
+Once Airflow is running, trigger the DAGs in the following order:
+
+1.  **Ingestion Phase (Extract & Load)**
+    *   Trigger `aeat_income_to_s3_raw_ingestion`
+    *   Trigger `fomento_valuations_to_s3_raw_ingestion`
+    *   Trigger `ine_population_to_s3_raw_ingestion`
+
+2.  **Transformation Phase (Transform)**
+    *   Trigger `dbt_transformation_dag` (Runs models, tests, and docs generation)
 
 ---
 
@@ -145,9 +160,10 @@ A multi-layered approach to ensure data trust:
 
 ```bash
 ├── dags/
-│   ├── aeat_income_ingestion_dag.py    # Selenium Scraper DAG
-│   ├── fomento_valuations_dag.py       # Excel Processing DAG
-│   └── dbt_transformation_dag.py       # dbt Runner & Docs DAG
+│   ├── aeat_income_ingestion_dag.py    # Selenium Scraper (Web -> Parquet -> S3)
+│   ├── fomento_valuations_dag.py       # Excel Processor (XLS -> Parquet -> S3)
+│   ├── ine_population_ingestion_dag.py # CSV Processor (CSV -> Parquet -> S3)
+│   └── dbt_transformation_dag.py       # dbt Runner & Docs Generator
 ├── dbt/
 │   ├── models/
 │   │   ├── staging/                    # Cleaning & Standardization
