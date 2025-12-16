@@ -26,35 +26,35 @@ graph LR
     classDef source fill:#f9f9f9,stroke:#666,stroke-width:1px,stroke-dasharray: 2 2;
 
     subgraph Orchestration ["🕹️ Orchestration (AWS EC2)"]
-        AF([Apache Airflow]):::airflow
+        AF(["Apache Airflow"]):::airflow
     end
 
     subgraph Sources ["📡 Data Sources"]
-        WEB[AEAT Web Portal<br/>(JS/Dynamic)]:::source
-        XLS[Fomento Files<br/>(.xls Legacy)]:::source
-        CSV[INE Census<br/>(.csv)]:::source
+        WEB["AEAT Web Portal<br/>(JS/Dynamic)"]:::source
+        XLS["Fomento Files<br/>(.xls Legacy)"]:::source
+        CSV["INE Census<br/>(.csv)"]:::source
     end
 
     subgraph Ingestion ["🐳 Ingestion Layer (Docker Containers)"]
         direction TB
-        SEL[Selenium Scraper<br/>(Headless Chrome)]:::docker
-        PY[Python Workers<br/>(Polars/Pandas)]:::docker
+        SEL["Selenium Scraper<br/>(Headless Chrome)"]:::docker
+        PY["Python Workers<br/>(Polars/Pandas)"]:::docker
     end
 
     subgraph DataLake ["💾 Data Lake Storage"]
-        S3[AWS S3 Bucket<br/>(Parquet Format)]:::aws
+        S3["AWS S3 Bucket<br/>(Parquet Format)"]:::aws
     end
 
     subgraph DWH ["❄️ Modern Data Warehouse"]
         direction LR
         
-        subgraph Layers [Snowflake Layers]
-            RAW[(RAW_SCHEMA<br/>Variant/Varchar)]:::snowflake
-            STG[(STAGING_SCHEMA<br/>Cleaned Views)]:::snowflake
-            MART[(MARTS_SCHEMA<br/>Business Tables)]:::snowflake
+        subgraph Layers ["Snowflake Layers"]
+            RAW[("RAW_SCHEMA<br/>Variant/Varchar")]:::snowflake
+            STG[("STAGING_SCHEMA<br/>Cleaned Views")]:::snowflake
+            MART[("MARTS_SCHEMA<br/>Business Tables")]:::snowflake
         end
 
-        DBT((dbt Core)):::dbt
+        DBT(("dbt Core")):::dbt
     end
 
     %% Flows
