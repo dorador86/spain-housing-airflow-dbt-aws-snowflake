@@ -3,22 +3,34 @@
 with income as (
     select 
         *,
-        -- Normalize municipality name: remove text after comma
-        lower(trim(split_part(municipality_name, ',', 1))) as normalized_name
+        -- Normalize municipality name logic (Reconstruct Natural Name):
+        -- 1. Remove Trailing Code (e.g., "-03065")
+        -- 2. Move suffix article to prefix (e.g., "Oliva, La" -> "La Oliva")
+        -- 3. Remove apostrophes (Handle "L'" vs "L") and trim/lower
+        lower(trim(replace(
+            regexp_replace(
+                regexp_replace(municipality_name, '-[0-9]+$', ''), -- Step 1: Remove Code
+                '^(.*),\\s*(El|La|Los|Las|L\'|L|A|Els|Les)$', '\\2 \\1', 1, 0, 'i' -- Step 2: Move Suffix to Prefix
+            ), 
+            '\'', '' -- Step 3: Remove apostrophes
+        ))) as normalized_name
     from {{ ref('stg_income') }}
 ),
 
 valuations as (
     select 
         *,
-        -- Normalize municipality name: remove text in parentheses at end AND after comma
-        lower(trim(
-            split_part(
-                regexp_replace(municipality_name, '\\s*\\([^)]*\\)\\s*$', ''),
-                ',', 
-                1
-            )
-        )) as normalized_name
+        -- Normalize municipality name logic for Valuations:
+        -- 1. Move Parenthesized Article to Prefix (e.g., "Ejido (El)" -> "El Ejido")
+        -- 2. Move Comma Article to Prefix (e.g., "Oliva, La" -> "La Oliva")
+        -- 3. Remove apostrophes and trim/lower
+        lower(trim(replace(
+            regexp_replace(
+                regexp_replace(municipality_name, '^(.*)\\s+\\((El|La|Los|Las|L\'|L|A|Els|Les)\\)$', '\\2 \\1', 1, 0, 'i'), -- Step 1: Move (Art) to Prefix
+                '^(.*),\\s*(El|La|Los|Las|L\'|L|A|Els|Les)$', '\\2 \\1', 1, 0, 'i' -- Step 2: Move , Art to Prefix
+            ),
+            '\'', '' -- Step 3: Remove apostrophes
+        ))) as normalized_name
     from {{ ref('stg_valuations') }}
 ),
 
