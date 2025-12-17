@@ -42,7 +42,7 @@ $$ \text{Tension Index} = \frac{\text{Housing Price (€/m²)}}{\text{Avg. Dispo
 This project handles diverse data formats and sources requiring specific engineering approaches:
 *   **AEAT (Tax Agency)**: **Selenium Web Scraper** to extract data from dynamic JS-rendered tables (bypassing blocking requests).
 *   **Fomento (Housing)**: Automated processing of legacy **Excel (.xls)** files using Polars/Pandas logic.
-*   **INE (Census)**: Integration of large **CSV** exports via direct download.
+*   **INE (Statistics Spain)**: Integration of large **CSV** exports via direct download.
 
 ### 2. Modern Data Lake Architecture (S3 + Parquet)
 *   **Raw Layer**: All ingested data is converted to **Parquet** format and stored in **AWS S3** for efficient, compressed, and schema-preserving storage.
