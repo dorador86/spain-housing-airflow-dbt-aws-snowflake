@@ -1,4 +1,4 @@
-# <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/9a/Flag_of_Spain.svg/1200px-Flag_of_Spain.svg.png" width="35" height="25" /> Spain Housing Market Analysis Data Pipeline
+# <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/9a/Flag_of_Spain.svg/1200px-Flag_of_Spain.svg.png" width="35" height="25" /> Spain Housing Data Engineering: ELT on AWS & Snowflake
 
 [![Airflow](https://img.shields.io/badge/Airflow-2.7+-017CEE?logo=apache-airflow&style=for-the-badge)](https://airflow.apache.org/)
 [![dbt](https://img.shields.io/badge/dbt-Core-FF694B?logo=dbt&style=for-the-badge)](https://www.getdbt.com/)
